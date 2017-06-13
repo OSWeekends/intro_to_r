@@ -1,0 +1,193 @@
+---
+title: "R en OS Weekends"
+output: html_notebook
+---
+
+Recopilación del Live Coding en Open Source Weekends del día 10 de Junio de 2017.
+Se trata de una introducción a R basándonos en una exploración de datos bajo el universo _tidyverse_.
+
+Esta introducción está basada en la [guía](http://r4ds.had.co.nz/eda.html) de Grolemund y Wickham, su [libro](http://r4ds.had.co.nz/) y el post de [Jenny Bryan](http://stat545.com/block002_hello-r-workspace-wd-project.html).
+
+## Empezamos por el principio.
+
+### ¿RStudio o consola?
+
+Una cosa es tan válida como la otra. Personalmente uso las dos a partes iguales, depende del ecosistema en el que me encuentre en cada momento. Por supuesto, para empezar siempre recomiendo RStudio, te ayudará en problemas de sintaxis, cuando compilas un documento o simplemente al crear gráficas. Te ayudará a centrarte en R y en resolver tu problema. En la sesión de OS cubrimos el funcionamiento básico del editor pero si quieres saber más puedes empezar por los [webinars](https://www.rstudio.com/resources/webinars/rstudio-essentials-webinar-series-part-1/) de RStudio.
+
+### Variables y operaciones
+
+A continuación vemos operaciones matemáticas básicas y además podemos ver la asignación de variables, recuerda que lo mismo da `<-` que `=` pero en R vemos un poco raro usar el `=` para la asignar variables.
+
+En los nombres de variables R acepta varios signos de puntuación (por ejemplo, ¡el punto!) pero no acepta una variable que empiece por número o que contenga un `-`. Si tienes alguna duda, siempre puedes visitar la [guía de estilo de Wickham](http://adv-r.had.co.nz/Style.html). 
+
+
+```{r}
+divide_multiplica <- 1 / 200 * 30
+divide_multiplica
+
+tambien.suma <- (59 + 73 + 2) / 3
+tambien.suma
+
+llamemosAlSeno <- sin(pi / 2)
+llamemosAlSeno
+
+# ¿Qué clase es mi variable?
+class(tambien.suma)
+```
+
+### Buscar ayuda
+
+R siempre estará para ofrecer ayuda a aquellos que la necesiten. 
+Tanto si estás en consola como si estás en la consola de RStudio lo único que tienes que hacer es incluir una `?` antes del nombre de la función.
+
+```{r}
+?read.csv
+```
+
+### ¿Qué más puedo hacer con R?
+
+Con R puedes hacer muchísimas cosas, desde un análisis de datos hasta un [libro](https://bookdown.org/yihui/bookdown/), pasando por [blog](https://github.com/rstudio/blogdown) o una [aplicación](https://shiny.rstudio.com/gallery/) en HTML/JavaScript.
+
+Puedes ver la lista completa de paquetes en [CRAN](cran.r-project.org).
+
+## Análisis exploratorio
+
+Una parte muy importante de R es la capacidad de analizar datos que tiene implementada. Antes de seguir el ejemplo vamos a ver el método de trabajo que suele ser recurrente cuando te encuentras con un problema de este tipo:
+
+![](http://r4ds.had.co.nz/diagrams/data-science-explore.png)
+
+
+Aunque nos vamos a centrar en la parte de transformar, visualizar y comunicar en el resto de puntos hay recursos para empezar a trabajar.
+
+**¿Qué es el paquete _tidyverse_?**
+
+Desde RStudio han creado un [paquete para atraerlos a todos](http://tidyverse.org/) llamado *tidyverse*. Incluye herramientas de limpieza, manipulación y visualización de datos. Todo lo que puedes hacer con estas herramientas lo puedes hacer con el paquete `base` de R, sin embargo, la ventaja que tienes al utilizarlo es que su sintaxis es mucho más sencilla y te permitirá *aprender a pensar en R* en vez de *aprender R*. *tidyverse* te instala varios paquetes y cuando cargas la librería solo cargará `tibble, tidyr, readr, purrr, dplyr` que son los más comunes en uso. Si quieres cargar algún otro paquete que viene bajo este universo ya lo tendrás instalado, solo tienes que recordar:
+
+```{r}
+library(readxl)
+```
+
+Sin embargo, estos paquetes tienen muchos cambios por lo que es posible que tu código requiera mucho más mantenimiento si lo usas, es un punto a tener en cuenta. 
+
+Como nosotros estamos aprendiendo R, vamos a hacerlo bajo *tidyverse*, presentando también algunos ejemplos en base para ver la diferencia de sintaxis.
+
+Cargamos la librería:
+
+```{r}
+#install.packages("tidyverse")
+library(tidyverse)
+```
+
+### Importar datos
+
+Las librerías [*readr*](http://readr.tidyverse.org/) y [*readxl*](http://readxl.tidyverse.org/) cubren casi todos los casos a la hora de importar data rectangular o tabulada.
+
+Aunque no tienes porqué conformarte, también puedes importar formatos texto como [JSON](https://cran.r-project.org/web/packages/jsonlite/vignettes/json-aaquickstart.html) o directamente desde base de datos [relacionales](https://cran.r-project.org/web/packages/RODBC/vignettes/RODBC.pdf) y [NoSQL](https://www.r-bloggers.com/r-and-mongodb/).
+
+### Limpiar datos
+
+Esta es la parte más tediosa de manejar datos. Aunque te ayuda a conocerlos bien es un trabajo largo (¡solo largo en el mejor de los casos!) y cambia completamente de un proyecto a otro. Uno de los paquetes que ayuda a limpiar los datos de la manera relacional (las columnas son variables y las filas observaciones) es el paquete [*tidyr*](http://tidyr.tidyverse.org/).
+
+En este ejemplo vamos a tomar datos ya limpios. 
+
+
+### Transformar y visualizar
+
+Vamos a intercalar transformaciones y visualizaciones para mostrar varios ejemplos y como funcionan las librerías. Recordad que empezamos con datos limpios y estructurados.
+
+```{r}
+# Cargamos un paquete que incluye los datos que vamos a utilizar
+library(nycflights13)
+
+# Guardo los datos en una variable
+flights <- flights
+
+# Voy a ver la estructura básica de mi data frame
+head(flights)
+str(flights)
+nrow(flights)
+ncol(flights)
+```
+
+¿Qué fechas tengo en el Data Frame?
+
+```{r}
+unique(flights$month)
+unique(flights$day)
+```
+
+Genial. Parece que tengo todo el año de 2013 así que voy a tomar enero y a explorar mis datos. 
+Filtrar con [*dplyr*](http://dplyr.tidyverse.org/) es muy sencillo, solo tengo que pensarlo.
+
+```{r}
+flights_yan <- flights %>% # Llamo al data frame que voy a utilizar
+  filter(month == 1) # Filtro el mes. Dplyr funciona por capas así que cada vez que incluyo %>% y hago una operación trabajo sobre el resultado que tengo justo anteriormente. Me ahorro almacenar cada operación en una variable.
+
+nrow(flights_yan)
+```
+
+Voy a ver los vuelos en enero, en el eje x voy a llamar a la `fecha y hora` y en el eje y voy a transformarlo con ggplot directamente en un conteo de los vuelos. Esta transformación la hago directamente con ggplot, aunque también la podría haber realizado en el data frame directamente.
+
+```{r}
+ggplot(data = flights_yan, aes(x = time_hour)) + 
+  geom_bar() +
+  labs(x = 'Fecha y hora', y = 'N. vuelos en enero')
+```
+
+Parece que los vuelos se cortan de madrugada... Voy a ver si es verdad, para eso voy a darle color a los datos, así veo si los vuelos salen después o antes de las 7 de la mañana.
+
+```{r}
+ggplot(data = flights_yan, aes(x = time_hour, fill = hour > 7)) + 
+  geom_bar() +
+  labs(x = 'Fecha y hora', y = 'N. vuelos en enero')
+```
+
+Si alguna vez no te acuerdas de alguna función puedes visitar la ayuda o los [cheatsheets](https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf).
+
+Se ve bastante bien que la mayoría de vuelos salen después de las 7, pero si quisiese viajar de madrugada, ¿qué compañía puede ayudarme? Eso lo puedo ver fácilmente con la función de ggplot `facet_wrap` que divide los gráficos por la dimensión que le indique siempre poniendo la misma escala.
+
+```{r}
+ggplot(data = flights_yan, aes(x = time_hour, fill = hour > 7)) + 
+  geom_bar() +
+  labs(x = 'Fecha y hora', y = 'N. vuelos en enero') +
+  facet_wrap(~ carrier) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) # Vamos a rotar las etiquetas del eje x para que sea legible.
+```
+
+Las aerolíneas que me pueden ayudar son B6 (por la cantidad de vuelos) y VX (por la frecuencia de vuelos) pero no sé cuáles son así que voy a usar el dataset `airlines` que contiene los nombres de las aerolíneas para saberlo. Voy a añadirle la columna de los nombres a `flights` con un left join.
+
+```{r}
+airlines <- airlines
+flights_yan <- left_join(flights_yan, airlines, by = 'carrier')
+unique(flights_yan$name)
+```
+
+Voy a agrupar por hora porque realmente no me importa el día, solo quiero ver si es de madrugada, y hago un conteo después de agruparlo.
+
+```{r}
+flights_yan_hour <- flights_yan %>%
+  group_by(hour, name) %>%
+  summarise(count = n())
+
+str(flights_yan_hour)
+```
+
+```{r}
+ggplot(data = flights_yan_hour, aes(x = hour, y = count, color = name)) +
+  geom_point()
+```
+
+### Modelización
+
+Esta es una parte muy interesante del análisis, hay millones de artículos y modelos. Para empezar recomiendo la introducción en el libro [R for Data Science](http://r4ds.had.co.nz/model-basics.html). 
+
+### Communicate
+
+Hay varias formas de comunicar en R, la más sencilla y más cómoda es RMarkdown. Además desde el IDE RStudio es muy sencillo crear uno, solo tienes que crear un nuevo archivo y en vez de un script, clickar sobre RMarkdown. Todo el texto plano se hace con la sintaxis de [markdown](https://daringfireball.net/projects/markdown/) y la parte ejecutable de código se hace sobre *`code chunks`*. 
+
+Si no sabes a lo que me refiero, ¡bajate esta guía y explóra el código tú mismo!
+
+## Preguntas y respuestas
+Si tienes alguna pregunta no dudes en contactarme por [twitter](https://twitter.com/Chucheria), [GitHub](https://github.com/chucheria) o directamente en el Slack de OS Weekends! (@b).
+
+Además, puedes encontrar más material y tutoriales el en [GitHub de RLadies](https://github.com/rladies/) 
