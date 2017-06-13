@@ -1,6 +1,9 @@
 ---
 title: "R en OS Weekends"
-output: html_notebook
+output:
+  html_document: 
+    toc: true
+  html_notebook: default
 ---
 
 Recopilación del Live Coding en Open Source Weekends del día 10 de Junio de 2017.
